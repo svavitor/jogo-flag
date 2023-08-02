@@ -21,8 +21,25 @@ var dif_atual;
 var pulos, vidas, pontos = 0;
 var vida_imune, imune_cont = 0;
 var fundo, piso, plataforma;
-var perde_vida_som, pula_som, pega_moeda_som;
+
+let jogo = {
+    imagens: {
+        fundo: null,
+        piso: null,
+        plataforma: null,
+        moeda: null,
+        joiaAzul: null,
+        vida: null,
+    },
+    sons: {
+        perdeVida: null,
+        pulo: null,
+        pegaMoeda: null
+    }
+};
+
 var moeda_img, vida_img;
+
 var joia_azul, joia_ativa = true;
 var bandeira, bandeira_baixa, bandeira_levantada, bandeira_ativa = false;
 
@@ -56,16 +73,17 @@ function keyPressed() {
 
     if (keyCode === UP_ARROW && (!pulando) && pulos > 0) {
         pulos -= 1;
-        pula_som.play();
+        jogo.sons.pulo.play();
         velocidade_y = -26;
         pulando = true;
     }
 }
 
 function preload() {
-    fundo = loadImage("imagens/fundo.png");
-    piso = loadImage("imagens/piso.png");
-    plataforma = loadImage("imagens/plataforma.png");
+    jogo.imagens.fundo = loadImage("imagens/fundo.png");
+    jogo.imagens.piso = loadImage("imagens/piso.png");
+    jogo.imagens.plataforma = loadImage("imagens/plataforma.png");
+
     jogadorAD = loadImage("imagens/jogador/jogadorAD.png");
     jogadorAE = loadImage("imagens/jogador/jogadorAE.png");
     jogadorD = loadImage("imagens/jogador/jogadorD.png");
@@ -82,9 +100,9 @@ function preload() {
     bandeira_levantada = loadImage("imagens/bandeira_levantada.png");
     vida_img = loadImage("imagens/vida.png");
 
-    perde_vida_som = loadSound('sons/perde_vida.ogg');
-    pula_som = loadSound('sons/pula.ogg');
-    pega_moeda_som = loadSound('sons/pega_moeda.wav');
+    jogo.sons.perdeVida = loadSound('sons/perde_vida.ogg');
+    jogo.sons.pulo = loadSound('sons/pula.ogg');
+    jogo.sons.pegaMoeda = loadSound('sons/pega_moeda.wav');
 }
 
 function setup() {
@@ -160,12 +178,12 @@ function draw() {
             vida_imune = false;
         }
 
-        background(fundo);
+        background(jogo.imagens.fundo);
         bandeira = (bandeira_ativa) ? bandeira_levantada : bandeira_baixa;
-        image(plataforma, 0, 300);
+        image(jogo.imagens.plataforma, 0, 300);
         image(bandeira, 940, 420);
         if (joia_ativa) image(joia_azul, 20, 250 + Math.cos(trig_cont) * 4);
-        image(piso, 0, 500);
+        image(jogo.imagens.piso, 0, 500);
         image(abelha, abe_x, abe_y + Math.cos(trig_cont) * 15);
         image(rato, ra_x, ra_y);
         image(jogador, jog_x, jog_y);
@@ -198,7 +216,7 @@ function draw() {
         if (colisao_jogador(abelha, abe_x, abe_y) || colisao_jogador(rato, ra_x, ra_y)) {
             if (!vida_imune) {
                 vidas -= 1;
-                perde_vida_som.play();
+                jogo.sons.perdeVida.play();
                 vida_imune = true;
                 jog_y -= 10;
                 velocidade_y = -10;
@@ -210,7 +228,7 @@ function draw() {
             if (colisao_jogador(moeda_img, moedas_x[i], moedas_y[i]) && moeda_ativa[i]) {
                 moeda_ativa[i] = false;
                 pontos += 100;
-                pega_moeda_som.play();
+                jogo.sons.pegaMoeda.play();
             }
         }
 
@@ -218,7 +236,7 @@ function draw() {
             joia_ativa = false;
             bandeira_ativa = true;
             pontos += 300;
-            pega_moeda_som.play();
+            jogo.sons.pegaMoeda.play();
         }
 
         if (colisao_jogador(bandeira, 940, 420) && bandeira_ativa) {
