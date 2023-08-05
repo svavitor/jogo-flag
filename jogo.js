@@ -121,6 +121,7 @@ function preload() {
     jogadorE = loadImage("imagens/jogador/jogadorE.png");
     jogadorPulandoD = loadImage("imagens/jogador/jogadorPulandoD.png");
     jogadorPulandoE = loadImage("imagens/jogador/jogadorPulandoE.png");
+
     abelhaE = loadImage("imagens/inimigos/abelhaE.png");
     abelhaD = loadImage("imagens/inimigos/abelhaD.png");
     ratoD = loadImage("imagens/inimigos/ratoD.png");
@@ -201,6 +202,8 @@ function draw() {
         if (trig_cont > 2 * Math.PI) trig_cont = 0;
         velocidade_y += gravidade;
         jog_y += velocidade_y;
+
+        // Gameover
         if (vidas < 0) tela = 2;
 
         if (vida_imune) imune_cont++;
@@ -219,6 +222,7 @@ function draw() {
         image(rato, ra_x, ra_y);
         image(jogador, jog_x, jog_y);
 
+        // Movimentação da abelha
         if (abe_x < 375 && !abelha_ori) abelha_ori = true;
         if (abe_x > 830 && abelha_ori) abelha_ori = false;
 
@@ -230,6 +234,7 @@ function draw() {
             abelha = abelhaE;
         }
 
+        // Movimentação do Rato
         if (ra_x < 20 && !rato_ori) rato_ori = true;
         if (ra_x > 300 && rato_ori) rato_ori = false;
 
@@ -244,6 +249,7 @@ function draw() {
         parede_esqueda = (jog_x < 0);
         parede_direita = (jog_x+jogador.width > width);
 
+        // Colisão com abelha
         if (colisao_jogador(abelha, abe_x, abe_y) || colisao_jogador(rato, ra_x, ra_y)) {
             if (!vida_imune) {
                 vidas -= 1;
@@ -254,6 +260,8 @@ function draw() {
             }
         }
 
+
+        // Colisão com as moedas
         for (i = 0; i < moedas_x.length; i++) {
             if (moeda_ativa[i]) image(moeda_img, moedas_x[i], moedas_y[i] + Math.sin(trig_cont) * 6);
             if (colisao_jogador(moeda_img, moedas_x[i], moedas_y[i]) && moeda_ativa[i]) {
@@ -263,6 +271,7 @@ function draw() {
             }
         }
 
+        // Colisão com Joia Azul
         if (colisao_jogador(joia_azul, 20, 250) && joia_ativa) {
             joia_ativa = false;
             bandeira_ativa = true;
@@ -270,6 +279,8 @@ function draw() {
             jogo.sons.pegaMoeda.play();
         }
 
+
+        // Colisão com bandeira
         if (colisao_jogador(bandeira, 940, 420) && bandeira_ativa) {
             tela = 3;
         }
@@ -294,6 +305,8 @@ function draw() {
             parede_esqueda = true;
         }
 
+
+        // Movimentação Esquerda <> Direita
         if (keyIsDown(LEFT_ARROW) && !parede_esqueda) {
             jog_x -= 8;
             andando = true;
@@ -307,7 +320,8 @@ function draw() {
             jogador_ori = true;
             if (!pulando) jogador = (anima_cont > 5) ? jogadorD : jogadorAD;
         }
-
+        
+        // 
         if (!pulando && !andando) jogador = (jogador_ori) ? jogadorD : jogadorE;
         if (pulando || velocidade_y !== 0) jogador = (jogador_ori) ? jogadorPulandoD : jogadorPulandoE;
 
