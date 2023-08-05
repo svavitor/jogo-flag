@@ -22,7 +22,36 @@ var pulos, vidas, pontos = 0;
 var vida_imune, imune_cont = 0;
 var fundo, piso, plataforma;
 
-let jogo = {
+let jogadr = {
+    vidas: 0,
+    pulos: 0,
+    pontos: 0,
+    x: 10,
+    y: 370,
+    orientacao: true,
+    imgAtual: null,
+    img: {
+        andandoDireita: null,
+        andandoEquerda: null,
+        paradoDireita: null,
+        paradoEsquerda: null,
+        pulandoDireita: null,
+        pulandoEsquerda: null
+        
+    },
+    loadImagens: () => {
+        jogadr.img.andandoDireita = loadImage("imagens/jogador/jogadorAD.png");
+        jogadr.img.andandoEquerda = loadImage("imagens/jogador/jogadorAE.png");
+        jogadr.img.paradoDireita = loadImage("imagens/jogador/jogadorD.png");
+        jogadr.img.paradoEsquerda = loadImage("imagens/jogador/jogadorE.png");
+        jogadr.img.pulandoDireita = loadImage("imagens/jogador/jogadorPulandoD.png");
+        jogadr.img.pulandoEsquerda = loadImage("imagens/jogador/jogadorPulandoE.png");
+    }
+}
+
+let jogo = []
+
+jogo = {
     imagens: {
         fundo: null,
         piso: null,
@@ -83,6 +112,8 @@ function preload() {
     jogo.imagens.fundo = loadImage("imagens/fundo.png");
     jogo.imagens.piso = loadImage("imagens/piso.png");
     jogo.imagens.plataforma = loadImage("imagens/plataforma.png");
+
+    jogadr.loadImagens();
 
     jogadorAD = loadImage("imagens/jogador/jogadorAD.png");
     jogadorAE = loadImage("imagens/jogador/jogadorAE.png");
@@ -267,7 +298,7 @@ function draw() {
             jog_x -= 8;
             andando = true;
             jogador_ori = false;
-            if (!pulando) jogador = (anima_cont > 5) ? jogadorE : jogadorAE;
+            if (!pulando) jogador = (anima_cont > 5) ? jogadr.img.paradoEsquerda : jogadr.img.andandoEquerda;
         }
 
         if (keyIsDown(RIGHT_ARROW) && !parede_direita) {
