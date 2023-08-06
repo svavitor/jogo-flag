@@ -10,6 +10,37 @@ var pulando = false;
 var abelha, abe_x, abe_y, abelha_ori = false; 
 var abelhaE, abelhaD;
 
+
+class Elemento {
+    constructor(imagem, x, y, orientacao){
+        this.imagem = imagem;
+        this.x = x;
+        this.y = y;
+        this.orientacao = orientacao;
+    }
+
+    colideCom(elem) {
+        if (this.x < elem.x + elem.imagem.width && this.x + this.imagem.width > this.x &&
+            this.y < elem.y + elem.imagem.height && this.y + this.imagem.height > elem.y) {
+            return true;
+        }
+        return false;
+    }
+
+
+}
+
+// Teste de classe
+class Rato extends Elemento {
+    constructor(imagem, x, y, orientacao, esquerda, direita){
+        super(imagem, x, y, orientacao)
+        this.esquerda = esquerda;
+        this.direita = direita;
+    }
+}
+
+let rat = new Rato;
+
 var rato, ra_x, ra_y, rato_ori = false;
 var ratoE, ratoD;
 
