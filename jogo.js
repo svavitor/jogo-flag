@@ -10,6 +10,48 @@ var pulando = false;
 var abelha, abe_x, abe_y, abelha_ori = false; 
 var abelhaE, abelhaD;
 
+
+class Elemento {
+    constructor(imagem, x, y, orientacao){
+        this.imagem = imagem;
+        this.x = x;
+        this.y = y;
+        this.orientacao = orientacao;
+    }
+
+    colideCom(elem) {
+        if (this.x < elem.x + elem.imagem.width 
+            && this.x + this.imagem.width > this.x 
+            && this.y < elem.y + elem.imagem.height 
+            && this.y + this.imagem.height > elem.y) {
+            return true;
+        }
+        return false;
+    }
+
+
+}
+
+// Teste de classe
+
+class Inimigo extends Elemento {
+    constructor(imagem, x, y, orientacao, esquerda, direita){
+        super(imagem, x, y, orientacao)
+        this.esquerda = esquerda;
+        this.direita = direita;
+    }
+}
+
+class Rato extends Elemento {
+    constructor(imagem, x, y, orientacao, esquerda, direita){
+        super(imagem, x, y, orientacao)
+        this.esquerda = esquerda;
+        this.direita = direita;
+    }
+}
+
+let rat = new Rato;
+
 var rato, ra_x, ra_y, rato_ori = false;
 var ratoE, ratoD;
 
@@ -22,7 +64,36 @@ var pulos, vidas, pontos = 0;
 var vida_imune, imune_cont = 0;
 var fundo, piso, plataforma;
 
-let jogo = {
+let jogadr = {
+    vidas: 0,
+    pulos: 0,
+    pontos: 0,
+    x: 10,
+    y: 370,
+    orientacao: true,
+    imgAtual: null,
+    img: {
+        andandoDireita: null,
+        andandoEquerda: null,
+        paradoDireita: null,
+        paradoEsquerda: null,
+        pulandoDireita: null,
+        pulandoEsquerda: null
+        
+    },
+    loadImagens: () => {
+        jogadr.img.andandoDireita = loadImage("imagens/jogador/jogadorAD.png");
+        jogadr.img.andandoEquerda = loadImage("imagens/jogador/jogadorAE.png");
+        jogadr.img.paradoDireita = loadImage("imagens/jogador/jogadorD.png");
+        jogadr.img.paradoEsquerda = loadImage("imagens/jogador/jogadorE.png");
+        jogadr.img.pulandoDireita = loadImage("imagens/jogador/jogadorPulandoD.png");
+        jogadr.img.pulandoEsquerda = loadImage("imagens/jogador/jogadorPulandoE.png");
+    }
+}
+
+let jogo = []
+
+jogo = {
     imagens: {
         fundo: null,
         piso: null,
@@ -84,12 +155,15 @@ function preload() {
     jogo.imagens.piso = loadImage("imagens/piso.png");
     jogo.imagens.plataforma = loadImage("imagens/plataforma.png");
 
+    jogadr.loadImagens();
+
     jogadorAD = loadImage("imagens/jogador/jogadorAD.png");
     jogadorAE = loadImage("imagens/jogador/jogadorAE.png");
     jogadorD = loadImage("imagens/jogador/jogadorD.png");
     jogadorE = loadImage("imagens/jogador/jogadorE.png");
     jogadorPulandoD = loadImage("imagens/jogador/jogadorPulandoD.png");
     jogadorPulandoE = loadImage("imagens/jogador/jogadorPulandoE.png");
+
     abelhaE = loadImage("imagens/inimigos/abelhaE.png");
     abelhaD = loadImage("imagens/inimigos/abelhaD.png");
     ratoD = loadImage("imagens/inimigos/ratoD.png");
@@ -170,6 +244,8 @@ function draw() {
         if (trig_cont > 2 * Math.PI) trig_cont = 0;
         velocidade_y += gravidade;
         jog_y += velocidade_y;
+
+        // Gameover
         if (vidas < 0) tela = 2;
 
         if (vida_imune) imune_cont++;
@@ -188,6 +264,7 @@ function draw() {
         image(rato, ra_x, ra_y);
         image(jogador, jog_x, jog_y);
 
+        // Movimentação da abelha
         if (abe_x < 375 && !abelha_ori) abelha_ori = true;
         if (abe_x > 830 && abelha_ori) abelha_ori = false;
 
@@ -199,6 +276,7 @@ function draw() {
             abelha = abelhaE;
         }
 
+        // Movimentação do Rato
         if (ra_x < 20 && !rato_ori) rato_ori = true;
         if (ra_x > 300 && rato_ori) rato_ori = false;
 
@@ -213,6 +291,7 @@ function draw() {
         parede_esqueda = (jog_x < 0);
         parede_direita = (jog_x+jogador.width > width);
 
+        // Colisão com abelha
         if (colisao_jogador(abelha, abe_x, abe_y) || colisao_jogador(rato, ra_x, ra_y)) {
             if (!vida_imune) {
                 vidas -= 1;
@@ -223,6 +302,8 @@ function draw() {
             }
         }
 
+
+        // Colisão com as moedas
         for (i = 0; i < moedas_x.length; i++) {
             if (moeda_ativa[i]) image(moeda_img, moedas_x[i], moedas_y[i] + Math.sin(trig_cont) * 6);
             if (colisao_jogador(moeda_img, moedas_x[i], moedas_y[i]) && moeda_ativa[i]) {
@@ -232,6 +313,7 @@ function draw() {
             }
         }
 
+        // Colisão com Joia Azul
         if (colisao_jogador(joia_azul, 20, 250) && joia_ativa) {
             joia_ativa = false;
             bandeira_ativa = true;
@@ -239,6 +321,8 @@ function draw() {
             jogo.sons.pegaMoeda.play();
         }
 
+
+        // Colisão com bandeira
         if (colisao_jogador(bandeira, 940, 420) && bandeira_ativa) {
             tela = 3;
         }
@@ -263,11 +347,13 @@ function draw() {
             parede_esqueda = true;
         }
 
+
+        // Movimentação Esquerda <> Direita
         if (keyIsDown(LEFT_ARROW) && !parede_esqueda) {
             jog_x -= 8;
             andando = true;
             jogador_ori = false;
-            if (!pulando) jogador = (anima_cont > 5) ? jogadorE : jogadorAE;
+            if (!pulando) jogador = (anima_cont > 5) ? jogadr.img.paradoEsquerda : jogadr.img.andandoEquerda;
         }
 
         if (keyIsDown(RIGHT_ARROW) && !parede_direita) {
@@ -276,7 +362,8 @@ function draw() {
             jogador_ori = true;
             if (!pulando) jogador = (anima_cont > 5) ? jogadorD : jogadorAD;
         }
-
+        
+        // 
         if (!pulando && !andando) jogador = (jogador_ori) ? jogadorD : jogadorE;
         if (pulando || velocidade_y !== 0) jogador = (jogador_ori) ? jogadorPulandoD : jogadorPulandoE;
 
