@@ -142,7 +142,7 @@ function inicia_jogo(dif) {
 function keyPressed() {
     if (tela > 1 && keyCode === 32) tela = 0;
 
-    if (keyCode === UP_ARROW && (!pulando) && pulos > 0) {
+    if ((keyCode === UP_ARROW || keyCode === 32) && (!pulando) && pulos > 0) {
         pulos -= 1;
         jogo.sons.pulo.play();
         velocidade_y = -26;
