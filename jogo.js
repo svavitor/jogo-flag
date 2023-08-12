@@ -20,8 +20,10 @@ class Elemento {
     }
 
     colideCom(elem) {
-        if (this.x < elem.x + elem.imagem.width && this.x + this.imagem.width > this.x &&
-            this.y < elem.y + elem.imagem.height && this.y + this.imagem.height > elem.y) {
+        if (this.x < elem.x + elem.imagem.width 
+            && this.x + this.imagem.width > this.x 
+            && this.y < elem.y + elem.imagem.height 
+            && this.y + this.imagem.height > elem.y) {
             return true;
         }
         return false;
@@ -31,6 +33,15 @@ class Elemento {
 }
 
 // Teste de classe
+
+class Inimigo extends Elemento {
+    constructor(imagem, x, y, orientacao, esquerda, direita){
+        super(imagem, x, y, orientacao)
+        this.esquerda = esquerda;
+        this.direita = direita;
+    }
+}
+
 class Rato extends Elemento {
     constructor(imagem, x, y, orientacao, esquerda, direita){
         super(imagem, x, y, orientacao)
