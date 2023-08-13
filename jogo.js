@@ -10,47 +10,8 @@ var pulando = false;
 var abelha, abe_x, abe_y, abelha_ori = false; 
 var abelhaE, abelhaD;
 
-
-class Elemento {
-    constructor(imagem, x, y, orientacao){
-        this.imagem = imagem;
-        this.x = x;
-        this.y = y;
-        this.orientacao = orientacao;
-    }
-
-    colideCom(elem) {
-        if (this.x < elem.x + elem.imagem.width 
-            && this.x + this.imagem.width > this.x 
-            && this.y < elem.y + elem.imagem.height 
-            && this.y + this.imagem.height > elem.y) {
-            return true;
-        }
-        return false;
-    }
-
-
-}
-
-// Teste de classe
-
-class Inimigo extends Elemento {
-    constructor(imagem, x, y, orientacao, esquerda, direita){
-        super(imagem, x, y, orientacao)
-        this.esquerda = esquerda;
-        this.direita = direita;
-    }
-}
-
-class Rato extends Elemento {
-    constructor(imagem, x, y, orientacao, esquerda, direita){
-        super(imagem, x, y, orientacao)
-        this.esquerda = esquerda;
-        this.direita = direita;
-    }
-}
-
-let rat = new Rato;
+var ratoSprite = new Sprite(null, true, null, null, null, null);
+var novoRato = new Elemento(20, 257, ratoSprite);
 
 var rato, ra_x, ra_y, rato_ori = false;
 var ratoE, ratoD;
@@ -166,8 +127,13 @@ function preload() {
 
     abelhaE = loadImage("imagens/inimigos/abelhaE.png");
     abelhaD = loadImage("imagens/inimigos/abelhaD.png");
+
     ratoD = loadImage("imagens/inimigos/ratoD.png");
     ratoE = loadImage("imagens/inimigos/ratoE.png");
+
+    novoRato.sprite.direita = loadImage("imagens/inimigos/ratoD.png");
+    novoRato.sprite.esquerda = loadImage("imagens/inimigos/ratoE.png");
+
     moeda_img = loadImage("imagens/moeda_img.png");
     joia_azul = loadImage("imagens/joia_azul.png");
     bandeira_baixa = loadImage("imagens/bandeira_baixa.png");
@@ -184,13 +150,13 @@ function setup() {
     createCanvas(1040, 580);
     jogador = jogadorD;
     abelha = abelhaE;
-    rato = ratoE;
     jog_x = 10;
     jog_y = 370;
     abe_x = 910;
     abe_y = 410;
-    ra_x = 20;
-    ra_y = 257;
+    novoRato.x = 20;
+    novoRato.y = 257;
+    novoRato.sprite.atual = novoRato.sprite.esquerda;
 }
 
 
@@ -261,7 +227,7 @@ function draw() {
         if (joia_ativa) image(joia_azul, 20, 250 + Math.cos(trig_cont) * 4);
         image(jogo.imagens.piso, 0, 500);
         image(abelha, abe_x, abe_y + Math.cos(trig_cont) * 15);
-        image(rato, ra_x, ra_y);
+        image(novoRato.sprite.atual, novoRato.x, novoRato.y);
         image(jogador, jog_x, jog_y);
 
         // Movimentação da abelha
@@ -276,23 +242,22 @@ function draw() {
             abelha = abelhaE;
         }
 
-        // Movimentação do Rato
-        if (ra_x < 20 && !rato_ori) rato_ori = true;
-        if (ra_x > 300 && rato_ori) rato_ori = false;
+        if (novoRato.x < 20 && !novoRato.orientacao) novoRato.orientacao = true;
+        if (novoRato.x > 300 && novoRato.orientacao) novoRato.orientacao = false;
 
-        if (rato_ori) {
-            ra_x += 8 + (dificuldade[dif_atual][2] * 0.8);
-            rato = ratoD;
-        } else if (!rato_ori) {
-            ra_x -= 8 + (dificuldade[dif_atual][2] * 0.8);
-            rato = ratoE;
+        if (novoRato.orientacao) {
+            novoRato.x += 8 + (dificuldade[dif_atual][2] * 0.8);
+            novoRato.sprite.atual = novoRato.sprite.direita;
+        } else if (!novoRato.orientacao) {
+            novoRato.x -= 8 + (dificuldade[dif_atual][2] * 0.8);
+            novoRato.sprite.atual = novoRato.sprite.esquerda;
         }
 
         parede_esqueda = (jog_x < 0);
         parede_direita = (jog_x+jogador.width > width);
 
         // Colisão com abelha
-        if (colisao_jogador(abelha, abe_x, abe_y) || colisao_jogador(rato, ra_x, ra_y)) {
+        if (colisao_jogador(abelha, abe_x, abe_y) || colisao_jogador(novoRato.sprite.atual, novoRato.x, novoRato.y)) {
             if (!vida_imune) {
                 vidas -= 1;
                 jogo.sons.perdeVida.play();
