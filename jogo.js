@@ -1,20 +1,18 @@
 var tela = 0;
-var jogador, jog_x, jog_y, jogador_ori = true;
+var jogador;
 var jogadorAD, jogadorAE, jogadorD, jogadorE;
 var jogadorPulandoD, jogadorPulandoE;
 var velocidade_y = 0;
 var gravidade = 1.5;
-var andando = false;
-var pulando = false;
 
 var abelha, abe_x, abe_y, abelha_ori = false; 
 var abelhaE, abelhaD;
 
-var ratoSprite = new Sprite(null, true, null, null, null, null);
-var novoRato = new Elemento(20, 257, ratoSprite);
+var spriteRato = new Sprite(null, true, null, null, null, null);
+var novoRato = new Elemento(20, 257, spriteRato);
 
-var rato, ra_x, ra_y, rato_ori = false;
-var ratoE, ratoD;
+var spriteJogador = new Sprite(null, false, null, null, null, null);
+var novoJogador = new Jogador(0, 0, spriteJogador);
 
 var parede_direita, parede_esqueda;
 var anima_cont = 0;
@@ -80,8 +78,8 @@ var moedas_y = [170, 135, 110, 135, 170, 430, 430, 430, 430, 430, 250, 300];
 var moeda_ativa = [true, true, true, true, true, true, true, true, true, true, true, true];
 
 function colisao_jogador(objeto, x, y) {
-    if (jog_x < x + objeto.width && jog_x + jogador.width > x &&
-        jog_y < y + objeto.height && jog_y + jogador.height > y) {
+    if (novoJogador.x < x + objeto.width && novoJogador.x + jogador.width > x &&
+        novoJogador.y < y + objeto.height && novoJogador.y + jogador.height > y) {
         return true;
     }
     return false;
@@ -92,8 +90,9 @@ function inicia_jogo(dif) {
     pulos = dificuldade[dif][0];
     dif_atual = dif;
     pontos = 0;
-    jog_x = 10;
-    jog_y = 370;
+    novoJogador.x = 10;
+    novoJogador.y = 370;
+    novoJogador.orientacao = true;
     for (i = 0; i < moeda_ativa.length; i++) moeda_ativa[i] = true;
     joia_ativa = true;
     bandeira_ativa = false;
@@ -103,11 +102,11 @@ function inicia_jogo(dif) {
 function keyPressed() {
     if (tela > 1 && keyCode === 32) tela = 0;
 
-    if ((keyCode === UP_ARROW || keyCode === 32) && (!pulando) && pulos > 0) {
+    if ((keyCode === UP_ARROW || keyCode === 32) && (!novoJogador.pulando) && pulos > 0) {
         pulos -= 1;
         jogo.sons.pulo.play();
         velocidade_y = -26;
-        pulando = true;
+        novoJogador.pulando = true;
     }
 }
 
@@ -128,9 +127,6 @@ function preload() {
     abelhaE = loadImage("imagens/inimigos/abelhaE.png");
     abelhaD = loadImage("imagens/inimigos/abelhaD.png");
 
-    ratoD = loadImage("imagens/inimigos/ratoD.png");
-    ratoE = loadImage("imagens/inimigos/ratoE.png");
-
     novoRato.sprite.direita = loadImage("imagens/inimigos/ratoD.png");
     novoRato.sprite.esquerda = loadImage("imagens/inimigos/ratoE.png");
 
@@ -149,9 +145,10 @@ function setup() {
     frameRate(30);
     createCanvas(1040, 580);
     jogador = jogadorD;
+    novoJogador.sprite.atual = jogadorD;
     abelha = abelhaE;
-    jog_x = 10;
-    jog_y = 370;
+    novoJogador.x = 10;
+    novoJogador.y = 370;
     abe_x = 910;
     abe_y = 410;
     novoRato.x = 20;
@@ -205,19 +202,19 @@ function draw() {
     if (tela == 1) {
         anima_cont++;
         if (anima_cont > 10) anima_cont = 0;
-        andando = false;
+        novoJogador.andando = false;
         trig_cont += 0.2;
         if (trig_cont > 2 * Math.PI) trig_cont = 0;
         velocidade_y += gravidade;
-        jog_y += velocidade_y;
+        novoJogador.y += velocidade_y;
 
         // Gameover
         if (vidas < 0) tela = 2;
 
-        if (vida_imune) imune_cont++;
-        if (imune_cont > 40) {
-            imune_cont = 0;
-            vida_imune = false;
+        if (novoJogador.imune) novoJogador.imuneTempo++;
+        if (novoJogador.imuneTempo > 40) {
+            novoJogador.imuneTempo = 0;
+            novoJogador.imune = false;
         }
 
         background(jogo.imagens.fundo);
@@ -228,7 +225,7 @@ function draw() {
         image(jogo.imagens.piso, 0, 500);
         image(abelha, abe_x, abe_y + Math.cos(trig_cont) * 15);
         image(novoRato.sprite.atual, novoRato.x, novoRato.y);
-        image(jogador, jog_x, jog_y);
+        image(novoJogador.sprite.atual, novoJogador.x, novoJogador.y);
 
         // Movimentação da abelha
         if (abe_x < 375 && !abelha_ori) abelha_ori = true;
@@ -253,20 +250,19 @@ function draw() {
             novoRato.sprite.atual = novoRato.sprite.esquerda;
         }
 
-        parede_esqueda = (jog_x < 0);
-        parede_direita = (jog_x+jogador.width > width);
+        parede_esqueda = (novoJogador.x < 0);
+        parede_direita = (novoJogador.x+novoJogador.sprite.atual.width > width);
 
         // Colisão com abelha
         if (colisao_jogador(abelha, abe_x, abe_y) || colisao_jogador(novoRato.sprite.atual, novoRato.x, novoRato.y)) {
-            if (!vida_imune) {
+            if (!novoJogador.imune) {
                 vidas -= 1;
                 jogo.sons.perdeVida.play();
-                vida_imune = true;
-                jog_y -= 10;
+                novoJogador.imune = true;
+                novoJogador.y -= 10;
                 velocidade_y = -10;
             }
         }
-
 
         // Colisão com as moedas
         for (i = 0; i < moedas_x.length; i++) {
@@ -292,45 +288,45 @@ function draw() {
             tela = 3;
         }
 
-        if (jog_y + jogador.height > 500) {
-            jog_y = 500 - jogador.height;
+        if (novoJogador.y + novoJogador.sprite.atual.height > 500) {
+            novoJogador.y = 500 - jogador.height;
             velocidade_y = 0;
-            pulando = false;
+            novoJogador.pulando = false;
+            novoJogador.pulando = false;
         }
 
-        if (jog_y + jogador.height > 300 && jog_y + jogador.height < 360 && jog_x < 350) {
-            jog_y = 300 - jogador.height;
+        if (novoJogador.y + novoJogador.sprite.atual.height > 300 && novoJogador.y + novoJogador.sprite.atual.height < 360 && novoJogador.x < 350) {
+            novoJogador.y = 300 - novoJogador.sprite.atual.height;
             velocidade_y = 0;
-            pulando = false;
+            novoJogador.pulando = false;
+            novoJogador.pulando = false;
         }
 
-        if (jog_x < 355 && jog_y < 381 && jog_y > 300) {
+        if (novoJogador.x < 355 && novoJogador.y < 381 && novoJogador.y > 300) {
             velocidade_y = 8;
         }
 
-        if (jog_x < 365 && jog_y > 300 && jog_y < 360) {
+        if (novoJogador.x < 365 && novoJogador.y > 300 && novoJogador.y < 360) {
             parede_esqueda = true;
         }
 
-
-        // Movimentação Esquerda <> Direita
         if (keyIsDown(LEFT_ARROW) && !parede_esqueda) {
-            jog_x -= 8;
-            andando = true;
-            jogador_ori = false;
-            if (!pulando) jogador = (anima_cont > 5) ? jogadr.img.paradoEsquerda : jogadr.img.andandoEquerda;
+            novoJogador.x -= 8;
+            novoJogador.andando = true;
+            novoJogador.orientacao = false;
+            if (!novoJogador.pulando) novoJogador.sprite.atual = (anima_cont > 5) ? jogadr.img.paradoEsquerda : jogadr.img.andandoEquerda;
         }
 
         if (keyIsDown(RIGHT_ARROW) && !parede_direita) {
-            jog_x += 8;
-            andando = true;
-            jogador_ori = true;
-            if (!pulando) jogador = (anima_cont > 5) ? jogadorD : jogadorAD;
+            novoJogador.x += 8;
+            novoJogador.andando = true;
+            novoJogador.orientacao = true;
+            if (!novoJogador.pulando) novoJogador.sprite.atual = (anima_cont > 5) ? jogadorD : jogadorAD;
         }
         
         // 
-        if (!pulando && !andando) jogador = (jogador_ori) ? jogadorD : jogadorE;
-        if (pulando || velocidade_y !== 0) jogador = (jogador_ori) ? jogadorPulandoD : jogadorPulandoE;
+        if (!novoJogador.pulando && !novoJogador.andando) novoJogador.sprite.atual = (novoJogador.orientacao) ? jogadorD : jogadorE;
+        if (novoJogador.pulando || velocidade_y !== 0) novoJogador.sprite.atual = (novoJogador.orientacao) ? jogadorPulandoD : jogadorPulandoE;
 
         fill(65);
         textSize(32);

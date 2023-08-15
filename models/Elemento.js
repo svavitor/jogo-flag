@@ -3,6 +3,7 @@ class Elemento {
         this.x = x;
         this.y = y;
         this.sprite = sprite;
+        this.orientaca = false;
     }
 
     colideCom(elem) {
